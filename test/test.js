@@ -1,18 +1,11 @@
 const assert = require( 'assert' );
 const stomp = require( 'stompjs' );
 const mqtt = require('mqtt');
+const utils = require( '../src/utils' );
 const USERNAME = 'admin';
 const PASSWORD = 'password';
 const TOPIC = 'dfh434';
 
-function normalizeMessage( msg ) {
-	if( msg.substr( 0, 7 ) === 'MESSAGE' ) {
-		//Assume Stomp Message
-		return stomp.Frame.unmarshall( msg )[ 0 ].body;
-	} else {
-		return msg;
-	}
-}
 
 describe('cross protocol messaging', function() {
 	var stompClient, mqttClient;
@@ -49,7 +42,7 @@ describe('cross protocol messaging', function() {
 		})
 
 		mqttClient.on('message', function (topic, message, packet ) {
-			mqttMessages.push( normalizeMessage( message.toString() ) );
+			mqttMessages.push( utils.normalizeMessage( message.toString() ) );
 		});
 	});
 
