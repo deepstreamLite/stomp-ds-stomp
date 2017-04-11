@@ -2,15 +2,22 @@ const assert = require( 'assert' );
 const stomp = require( 'stompjs' );
 const mqtt = require('mqtt');
 const utils = require( '../src/utils' );
+const DsApolloBridge = require( '../src/ds-apollo-bridge' );
 const USERNAME = 'admin';
 const PASSWORD = 'password';
 const TOPIC = 'dfh434';
+const MQTT_URL = 'mqtt://localhost:61613';
+const MQTT_CREDENTIALS = { username: USERNAME, password: PASSWORD };
 
 
 describe('cross protocol messaging', function() {
 	var stompClient, mqttClient;
 	var mqttMessages = [];
 	var stompMessages = [];
+
+	it( 'creates the deepstream apollo bridge', function( next ) {
+		var dsApolloBridge = new DsApolloBridge( )
+	})
 
 	it( 'connects the STOMP client', function( next ){
 		stompClient = stomp.overTCP( 'localhost', 61613 );
@@ -28,7 +35,7 @@ describe('cross protocol messaging', function() {
 	})
 
 	it( 'connects the MQTT client', function( next ){
-		mqttClient = mqtt.connect('mqtt://localhost:61613', {username: USERNAME, password: PASSWORD });
+		mqttClient = mqtt.connect( MQTT_URL, MQTT_CREDENTIALS );
 		
 		mqttClient.on( 'connect', function(){
 			mqttClient.subscribe( TOPIC, next );

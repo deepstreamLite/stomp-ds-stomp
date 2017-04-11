@@ -9,6 +9,8 @@ module.exports = class DsApolloBridge extends EventEmitter{
 		this._mqttClient.on( 'error', this._onError.bind( this, 'MQTT' ) );
 		this._mqttClient.on( 'message', this._onMqttMessage.bind( this ) );
 
+		this._dsClient = deepstream( dsUrl ).login( dsCredentials, this._onDsLogin.bind( this ) );
+
 		this._mqttReady = false;
 		this._dsReady = false;
 	}
@@ -22,6 +24,15 @@ module.exports = class DsApolloBridge extends EventEmitter{
 
 	_onMqttMessage( topic, message, packet ) {
 		this._dsClient.event.emit( topic, utils.normalizeMessage( message.toString() ) );
+	}
+
+	_onDsLogin( success ) {
+		if( !success, err ) {
+			this._onError( 'ds', err );
+		} else {
+			this._dsReady = true;
+			this._checkReady();
+		}
 	}
 
 	_checkReady() {
