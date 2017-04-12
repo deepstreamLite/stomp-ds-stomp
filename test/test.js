@@ -1,6 +1,7 @@
 const assert = require( 'assert' );
 const stomp = require( 'stompjs' );
 const mqtt = require('mqtt');
+const deepstream = require( 'deepstream.io-client-js' );
 const utils = require( '../src/utils' );
 const DsApolloBridge = require( '../src/ds-apollo-bridge' );
 const USERNAME = 'admin';
@@ -8,16 +9,34 @@ const PASSWORD = 'password';
 const TOPIC = 'dfh434';
 const MQTT_URL = 'mqtt://localhost:61613';
 const MQTT_CREDENTIALS = { username: USERNAME, password: PASSWORD };
+const DS_URL = 'wss://154.deepstreamhub.com?apiKey=164f7d4a-e98e-4015-b3a3-c986b5004be1';
+const DS_CREDENTIALS = {};
 
 
 describe('cross protocol messaging', function() {
-	var stompClient, mqttClient;
+	var stompClient, mqttClient, dsClient;
 	var mqttMessages = [];
 	var stompMessages = [];
+	var dsMessages = [];
 
 	it( 'creates the deepstream apollo bridge', function( next ) {
-		var dsApolloBridge = new DsApolloBridge( )
-	})
+		var dsApolloBridge = new DsApolloBridge( DS_URL, DS_CREDENTIALS, MQTT_URL, MQTT_CREDENTIALS );
+		dsApolloBridge.on( 'ready', next );
+	});
+
+	it( 'connects the deepstream client', function( next ){
+		dsClient = deepstream( DS_URL ).login( DS_CREDENTIALS, (ok, err) => {
+			if( ok ) {
+				next();
+			} else {
+				throw err;
+			}
+		});
+
+		dsClient.event.subscribe( TOPIC, msg => {
+			dsMessages.push( msg );
+		})
+	});
 
 	it( 'connects the STOMP client', function( next ){
 		stompClient = stomp.overTCP( 'localhost', 61613 );
@@ -28,15 +47,14 @@ describe('cross protocol messaging', function() {
 			});
 			next();
 		}, function(){
-			console.log( arguments );
 			assert( false, 'STOMP Client failed to connect via TCP' );
 			next();
 		});
-	})
+	});
 
 	it( 'connects the MQTT client', function( next ){
 		mqttClient = mqtt.connect( MQTT_URL, MQTT_CREDENTIALS );
-		
+
 		mqttClient.on( 'connect', function(){
 			mqttClient.subscribe( TOPIC, next );
 			assert( true, 'MQTT Client connected via TCP' );
@@ -64,6 +82,8 @@ describe('cross protocol messaging', function() {
 			assert.equal( mqttMessages[ 0 ], 'msg-a', 'MQTT received the right message' );
 			assert.equal( stompMessages.length, 1, 'STOMP has received the message from STOMP' );
 			assert.equal( stompMessages[ 0 ], 'msg-a', 'STOMP received the right message' );
+			assert.equal( dsMessages.length, 1, 'DS has received the message from STOMP' );
+			assert.equal( dsMessages[ 0 ], 'msg-a', 'DS received the right message' );
 			next();
 		}, 50 );
 	});
@@ -79,6 +99,8 @@ describe('cross protocol messaging', function() {
 			assert.equal( mqttMessages[ 1 ], 'msg-b', 'STOMP received the right message' );
 			assert.equal( stompMessages.length, 2, 'MQTT has received the message from STOMP' );
 			assert.equal( stompMessages[ 1 ], 'msg-b', 'MQTT received the right message' );
+			assert.equal( dsMessages.length, 2, 'DS has received the message from STOMP' );
+			assert.equal( dsMessages[ 1 ], 'msg-b', 'DS received the right message' );
 			next();
 		}, 50 );
 	});

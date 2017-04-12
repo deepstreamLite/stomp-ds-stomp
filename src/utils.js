@@ -1,3 +1,4 @@
+const stomp = require( 'stompjs' );
 
 exports.normalizeMessage = function( msg ) {
 	if( msg.substr( 0, 7 ) === 'MESSAGE' ) {

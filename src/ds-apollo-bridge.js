@@ -1,4 +1,7 @@
-const EventEmitter = require( 'events' ).Emitter;
+const EventEmitter = require( 'events' ).EventEmitter;
+const mqtt = require('mqtt');
+const utils = require( './utils' );
+const deepstream = require( 'deepstream.io-client-js' );
 
 module.exports = class DsApolloBridge extends EventEmitter{
 	constructor( dsUrl, dsCredentials, mqttUrl, mqttCredentials ) {
@@ -16,7 +19,7 @@ module.exports = class DsApolloBridge extends EventEmitter{
 	}
 
 	_onMqttConnect() {
-		this._mqttClient.subscribe( *, () => {
+		this._mqttClient.subscribe( '#', () => {
 			this._mqttReady = true;
 			this._checkReady();
 		});
@@ -26,8 +29,8 @@ module.exports = class DsApolloBridge extends EventEmitter{
 		this._dsClient.event.emit( topic, utils.normalizeMessage( message.toString() ) );
 	}
 
-	_onDsLogin( success ) {
-		if( !success, err ) {
+	_onDsLogin( success, err ) {
+		if( !success ) {
 			this._onError( 'ds', err );
 		} else {
 			this._dsReady = true;
