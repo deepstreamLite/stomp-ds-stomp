@@ -74,6 +74,7 @@ describe('cross protocol messaging', function() {
 	it( 'sends a message via STOMP and receives it across all other clients', function( next ){
 		assert.equal( mqttMessages.length, 0, 'mqtt has received 0 messages yet' );
 		assert.equal( stompMessages.length, 0, 'stomp has received 0 messages yet' );
+		assert.equal( dsMessages.length, 0, 'ds has received 0 messages yet' );
 
 		stompClient.send( '/topic/' + TOPIC, {}, 'msg-a' );
 
@@ -91,6 +92,7 @@ describe('cross protocol messaging', function() {
 	it( 'sends a message via MQTT and receives it across all other clients', function( next ){
 		assert.equal( mqttMessages.length, 1, 'mqtt has received 1 messages yet' );
 		assert.equal( stompMessages.length, 1, 'stomp has received 1 messages yet' );
+		assert.equal( dsMessages.length, 1, 'ds has received 1 messages yet' );
 
 		mqttClient.publish( TOPIC, 'msg-b');
 
